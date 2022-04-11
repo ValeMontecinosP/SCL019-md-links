@@ -3,5 +3,10 @@
   "version": "0.1.0",
   "engines": {
     "node": ">=14.x"
+  },
+  "dependencies": {
+    "colors": "^1.4.0",
+    "markdown-it": "^12.3.2",
+    "prompt-sync": "^4.2.0"
   }
 }
