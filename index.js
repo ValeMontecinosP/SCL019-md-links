@@ -4,43 +4,82 @@
 const fs = require("fs");
 const path = require('path');
 const colors = require("colors");
-// const MarkdownIt = require ("markdown-it"),
-//   md = new MarkdownIt();
-// const result = md.render("# markdownt-it rulez")
-// console.log(result)
 const prompt = require ( 'prompt-sync' ) ( ) ; 
 let promptValue = prompt('Ingresa la ruta del archivo: ');
 console.log(`ruta: ${promptValue}`);
 
-const md = require('markdown-it')();
-console.log(`${(md.validateLink("hola"))}`.red)
+const https = require('https')
+const validateLink = (link) => {
+  const options = {
+    hostname: link,
+    port: 40,
+    path: promptValue,
+    method: 'HEAD'
+  }
+  const req = https.request(options, link => {
+    console.log(`statusCode: ${link.statusCode}`)
+  
+    link.on('data', d => {
+      process.stdout.write(d)
+    })
+  })
+  req.on('error', error => {
+    console.error(error)
+  })
+  req.end()
+  return link.statusCode
+}
 
-function isAbsolutePath (promptValue) {
+
+//console.log(__dirname)
+// console.log(fs.readdir(promptValue, (error, archive)=> {
+//   if (error) throw error;
+//   if (path.extname(promptValue)==".md") return promptValue
+//   console.log(archive.red);
+//   //return md archives
+// }))
+
+const isAbsolutePath = (promptValue) => {
   if (path.isAbsolute(promptValue) == false) {
     console.log(`Ruta absoluta: ${path.resolve(promptValue)}`.bgGreen);
   };
-}
-
-// const validLink = (input) => {
-//   const md = require('markdown-it')();
-//   // enable everything
-//   md.validateLink(input)
-  
-//   console.log(`¿es un enlace válido? ${md.validateLink()}`)
-// };
+};
 
 const mdData = () => fs.readFile(promptValue, "utf-8", (error, archive)=> {
   if (error){
     console.log("archivo no existe");
   }
   else{
-    console.log(archive); //esto se puede borrar después
-  }
-  return archive
+    const splitLines = archive.split("\n");
+    let linksList = [];
+    for (let i=0; i<splitLines.length; i++) {
+      const line = splitLines[i];
+      //const regularEx = /(http(s)?:\/\/[^\s)]+)/g; //links sin markdown
+      const regularEx = /\[([^\]]+)]\((https?:\/\/[^\s)]+)\)/g; //links con markdown
+      const links = line.matchAll(regularEx);
+      const match = regularEx.test(line);
+      if (match) {
+        for (const link of links) {
+          const data = {
+            text: link[1],
+            href: link[2],
+            file: promptValue,
+            line: i + 1,
+            status: validateLink(link[2])
+          };
+          linksList.push(data);
+        }
+      }
+    }
+    console.log(`Se han encontrado ${linksList.length} links`)
+    console.log(linksList)
+    return linksList;
+  }  
 });
 
-function validMd(promptValue) {
-  if (path.extname(promptValue)==".md") {
+const validMd = (promptValue) => {
+  //toLowerCase, trim
+  if (path.extname(promptValue.toLowerCase())==".md") {
     isAbsolutePath(promptValue);
     mdData();
     
@@ -50,26 +89,8 @@ function validMd(promptValue) {
   }
 };
 validMd(promptValue);
-//validLink(mdData);
-
-// if (validLink=="true"){
-//   return console.log(`${mdData} es un link válido`)
-// } else {
-//   return console.log(`${mdData} no es un link válido`)
-// }
 
 
-
-//console.log(`Es o no absoluta: ${path.isAbsolute(promptValue)}`.bgYellow);
-
-//console.log(__dirname)
-// console.log(fs.readdir(promptValue, (error, archive)=> {
-//   if (error) throw error;
-//   console.log(archive.red);
-// }))
-
-// const mdlinks = require('dc-md-links');
-
-//confirmar si el archivo existe en la carpeta
-//hacer funcion condicional que corrobore si el archivo es md o no
-//leer con readFile el archivo md
+//confirmar si el archivo existe en la carpeta CHECK
+//hacer funcion condicional que corrobore si el archivo es md o no CHECK
+//leer con readFile el archivo md CHECCK
