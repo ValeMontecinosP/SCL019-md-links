@@ -1,34 +1,30 @@
-// // module.exports = () => {
-// //   // ...
-// // };
 const fs = require("fs");
 const path = require('path');
 const colors = require("colors");
 const prompt = require ( 'prompt-sync' ) ( ) ; 
-let promptValue = prompt('Ingresa la ruta del archivo: ');
+let promptValue = prompt('Ingresa la ruta del archivo: '.bgMagenta);
 console.log(`ruta: ${promptValue}`);
 
-const https = require('https')
-const validateLink = (link) => {
-  const options = {
-    hostname: link,
-    port: 40,
-    path: promptValue,
-    method: 'HEAD'
-  }
-  const req = https.request(options, link => {
-    console.log(`statusCode: ${link.statusCode}`)
+// const https = require('https')
+// const validateLink = (link) => {
+//   const options = {
+//     hostname: link,
+//     port: 40,
+//     path: promptValue,
+//   }
+//   const req = https.request(options, link => {
+//     console.log(`statusCode: ${link.statusCode}`)
   
-    link.on('data', d => {
-      process.stdout.write(d)
-    })
-  })
-  req.on('error', error => {
-    console.error(error)
-  })
-  req.end()
-  return link.statusCode
-}
+//     link.on('data', d => {
+//       process.stdout.write(d)
+//     })
+//   })
+//   req.on('error', error => {
+//     console.error(error)
+//   })
+//   req.end()
+//   return link.statusCode
+// }
 
 
 //console.log(__dirname)
@@ -39,18 +35,8 @@ const validateLink = (link) => {
 //   //return md archives
 // }))
 
-const isAbsolutePath = (promptValue) => {
-  if (path.isAbsolute(promptValue) == false) {
-    console.log(`Ruta absoluta: ${path.resolve(promptValue)}`.bgGreen);
-  };
-};
-
-const mdData = () => fs.readFile(promptValue, "utf-8", (error, archive)=> {
-  if (error){
-    console.log("archivo no existe");
-  }
-  else{
-    const splitLines = archive.split("\n");
+const returnLinks = (archive) => {
+  const splitLines = archive.split("\n");
     let linksList = [];
     for (let i=0; i<splitLines.length; i++) {
       const line = splitLines[i];
@@ -65,7 +51,7 @@ const mdData = () => fs.readFile(promptValue, "utf-8", (error, archive)=> {
             href: link[2],
             file: promptValue,
             line: i + 1,
-            status: validateLink(link[2])
+            //status: validateLink(link[2])
           };
           linksList.push(data);
         }
@@ -74,6 +60,22 @@ const mdData = () => fs.readFile(promptValue, "utf-8", (error, archive)=> {
     console.log(`Se han encontrado ${linksList.length} links`)
     console.log(linksList)
     return linksList;
+}
+
+const isAbsolutePath = (promptValue) => {
+  if (path.isAbsolute(promptValue) == false) {
+    console.log(`Ruta absoluta: ${path.resolve(promptValue)}`.bgGreen);
+    return false
+  };
+};
+
+const mdData = () => fs.readFile(promptValue, "utf-8", (error, archive)=> {
+  if (error){
+    console.log("archivo no existe");
+    return false;
+  }
+  else{
+    returnLinks(archive)
   }  
 });
 
@@ -82,15 +84,25 @@ const validMd = (promptValue) => {
   if (path.extname(promptValue.toLowerCase())==".md") {
     isAbsolutePath(promptValue);
     mdData();
-    
+    return true
   }
   else {
     console.log(`chao esto no es .md, es Extension: ${path.extname(promptValue)}`.rainbow)
+    return false
   }
 };
 validMd(promptValue);
 
+exports.validMd = validMd;
+exports.isAbsolutePath = isAbsolutePath;
+exports.mdData = mdData;
+exports.returnLinks = returnLinks;
+
+// () => {
+//   // ...
+// };
+
 
 //confirmar si el archivo existe en la carpeta CHECK
 //hacer funcion condicional que corrobore si el archivo es md o no CHECK
-//leer con readFile el archivo md CHECCK
+//leer con readFile el archivo md CHECK
