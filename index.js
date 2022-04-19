@@ -2,29 +2,36 @@ const fs = require("fs");
 const path = require('path');
 const colors = require("colors");
 const prompt = require ( 'prompt-sync' ) ( ) ; 
+const url = require("url");
+
+
 let promptValue = prompt('Ingresa la ruta del archivo: '.bgMagenta);
 console.log(`ruta: ${promptValue}`);
 
-// const https = require('https')
-// const validateLink = (link) => {
-//   const options = {
-//     hostname: link,
-//     port: 40,
-//     path: promptValue,
-//   }
-//   const req = https.request(options, link => {
-//     console.log(`statusCode: ${link.statusCode}`)
+const https = require('https')
+
+const validateLink = (link) => {
+  const options = {
+    hostname: url.parse(link).host,
+    port: 443,
+    path: url.parse(link).pathname,
+    method: "HEAD",
+  }
+  const req = https.request(options, link => {
+    console.log(`Status Code: ${link.statusCode} para ${options.hostname+options.path}`)
   
-//     link.on('data', d => {
-//       process.stdout.write(d)
-//     })
-//   })
-//   req.on('error', error => {
-//     console.error(error)
-//   })
-//   req.end()
-//   return link.statusCode
-// }
+    link.on('data', d => {
+      process.stdout.write(d)
+    })
+    return link.statusCode
+  })
+  req.on('error', error => {
+    //console.error(error)
+    console.log(`Status Code: NOTFOUND ${link} no existe`)
+  })
+  req.end()
+  return link.statusCode
+}
 
 
 //console.log(__dirname)
@@ -36,7 +43,7 @@ console.log(`ruta: ${promptValue}`);
 // }))
 
 const returnLinks = (archive) => {
-  const splitLines = archive.split("\n");
+  const splitLines = archive.split("\n"); //eslint-disable-line
     let linksList = [];
     for (let i=0; i<splitLines.length; i++) {
       const line = splitLines[i];
@@ -51,8 +58,8 @@ const returnLinks = (archive) => {
             href: link[2],
             file: promptValue,
             line: i + 1,
-            //status: validateLink(link[2])
           };
+          validateLink(link[2])
           linksList.push(data);
         }
       }
@@ -71,14 +78,15 @@ const isAbsolutePath = (promptValue) => {
 
 const mdData = () => fs.readFile(promptValue, "utf-8", (error, archive)=> {
   if (error){
-    console.log("archivo no existe");
+    console.log("archivo no existe"); //eslint-disable-line no-alert
     return false;
   }
   else{
     returnLinks(archive)
   }  
-});
+}); //asincrona
 
+//1
 const validMd = (promptValue) => {
   //toLowerCase, trim
   if (path.extname(promptValue.toLowerCase())==".md") {

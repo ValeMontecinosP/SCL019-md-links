@@ -27,17 +27,14 @@ const arrayPrueba = [
   }
 ]
 
-test("returnLinks", () => {
-  it("should return links", () => {
-    expect(index.returnLinks("prueba.md")).toEqual(arrayPrueba);
-  });
+test("should returnLinks", () => {
+    expect(index.returnLinks(index.mdData("/Users/valemontecinosp/SCL019-md-links/prueba.md"))).toEqual(arrayPrueba);
 });
 
 describe('isAbsolutePath', () => {
 
   it("should return false if not an absolute path", () => {
     expect(index.isAbsolutePath("prueba.md")).toBe(false);
-    console.log(index.isAbsolutePath("prueba.md"))
   });
 
 });
@@ -50,10 +47,34 @@ describe('validMd', () => {
 
 });
 
-describe("mdData", () => {
-  it("should...", ()=>{
-    expect(index.mdData("prueba.js")).toBeFalsy();
-  });
+test("should test mdData", done => {
+  const data = "prueba.js";
+  function callback (error, data) {
+    if (error) {
+      done(error);
+      return
+    }
+    try {
+      expect(data).toBeFalsy();
+      done(); 
+    } catch (error) {
+      done(error);
+    }
+    
+      expect(data).toBe(arrayPrueba)
+  };
 
+  index.mdData(callback);
 });
+
+// test('the fetch fails with an error', () => {
+//   return expect(index.mdData("prueba.md")).rejects.toMatch('error');
+// });
+
+// describe("mdData", () => {
+//   it("should...", ()=>{
+//     expect(index.mdData("prueba.js")).toBeFalsy();
+//   });
+
+// });
 
